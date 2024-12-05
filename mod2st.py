@@ -50,34 +50,31 @@ with open('RandomForest.pkl', 'wb') as f:
 st.title("Yurak Kasalligi Bashorati")
 
 # Kirish qiymatlarini olish
-Age = st.number_input("Yosh: ", min_value=0, max_value=120)
-Glukoza = st.number_input("Glukoza miqdori: ", format="%.1f", min_value=0.0)
-BMI = st.number_input("BMI: ", format="%.1f", min_value=0.0)
-Hypertension = st.selectbox("Gipertenziya mavjudmi?", options=[0, 1])
-HeartDisease = st.selectbox("Yurak kasalligi mavjudmi?", options=[0, 1])
-AfricanAmerican = st.selectbox("Irq: Afro-amerikalik", options=[0, 1])
-Asian = st.selectbox("Irq: Osiyolik", options=[0, 1])
-Caucasian = st.selectbox("Irq: Kavkazlik", options=[0, 1])
-Hispanic = st.selectbox("Irq: Ispan tilida so'zlashuvchi", options=[0, 1])
-Other = st.selectbox("Irq: Boshqa", options=[0, 1])
-
-features = np.array([[Age, Glukoza, BMI, Hypertension, HeartDisease, 
-                      AfricanAmerican, Asian, Caucasian, Hispanic, Other]])
+age = st.number_input("Yosh", min_value=0, max_value=120)
+sex = st.selectbox("Jins", options=["Erkak", "Ayol"])  # 0: Erkak, 1: Ayol
+cp = st.selectbox("Ko'krak og'rig'i turi", options=[0, 1, 2, 3])
+trestbps = st.number_input("Dam olishda qon bosimi", min_value=80, max_value=200)
+chol = st.number_input("Serum xolesterin miqdori", min_value=100, max_value=400)
+fbs = st.selectbox("Qon shakar darajasi 120 dan yuqori?", options=[0, 1])
+restecg = st.selectbox("Dam olishdagi elektrokardiogram", options=[0, 1, 2])
+thalach = st.number_input("Maksimal yurak tezligi", min_value=50, max_value=200)
+exang = st.selectbox("Yurak og'rig'i bo'ldimi?", options=[0, 1])
+oldpeak = st.number_input("Oldingi qiyinchilik", min_value=0.0, max_value=6.0)
+slope = st.selectbox("Sloy turi", options=[0, 1, 2])
+ca = st.selectbox("Qon tomirlarini soni", options=[0, 1, 2, 3])
+thal = st.selectbox("Thalassemia turi", options=[3, 6, 7])
 
 # Bashorat qilish uchun tugma
-# To'g'ri indentatsiya
 if st.button("Bashorat qilish"):
-    features = np.array([[Age, Glukoza, BMI, Hypertension, HeartDisease, 
-                          AfricanAmerican, Asian, Caucasian, Hispanic, Other]])
-    features = scaler.transform(features) 
+    features = np.array([[age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
+    features = scaler.transform(features)
 
+    # Modelni yuklash
     try:
         with open('RandomForest.pkl', 'rb') as file:
-            decision_tree_model = pickle.load(file)
+            model = pickle.load(file)
     except Exception as e:
         st.error(f"Modelni yuklashda xato: {e}")
-
-
 
     # Bashorat qilish
     prediction = model.predict(features)
