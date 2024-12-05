@@ -51,7 +51,7 @@ st.title("Yurak Kasalligi Bashorati")
 
 # Kirish qiymatlarini olish
 age = st.number_input("Yosh", min_value=0, max_value=120)
-sex = st.selectbox("Jins", options=[0, 1])  # 0: Erkak, 1: Ayol
+sex = st.selectbox("Jins", options=["Erkak", "Ayol"])  # 0: Erkak, 1: Ayol
 cp = st.selectbox("Ko'krak og'rig'i turi", options=[0, 1, 2, 3])
 trestbps = st.number_input("Dam olishda qon bosimi", min_value=80, max_value=200)
 chol = st.number_input("Serum xolesterin miqdori", min_value=100, max_value=400)
