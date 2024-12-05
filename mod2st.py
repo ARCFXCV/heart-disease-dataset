@@ -71,11 +71,13 @@ if st.button("Bashorat qilish"):
    features = scaler.transform(features)  # Transform qilish
 
     # Modelni yuklash
+    # To'g'ri indentatsiya:
     try:
         with open('RandomForest.pkl', 'rb') as file:
-            model = pickle.load(file)
+            decision_tree_model = pickle.load(file)
     except Exception as e:
         st.error(f"Modelni yuklashda xato: {e}")
+
 
     # Bashorat qilish
     prediction = model.predict(features)
