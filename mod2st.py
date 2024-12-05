@@ -65,18 +65,18 @@ ca = st.selectbox("Qon tomirlarini soni", options=[0, 1, 2, 3])
 thal = st.selectbox("Thalassemia turi", options=[3, 6, 7])
 
 # Bashorat qilish uchun tugma
+# To'g'ri indentatsiya
 if st.button("Bashorat qilish"):
-   features = np.array([[age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
-   features = np.array(features)  # to'liq ikki o'lchovli formatga kiritish
-   features = scaler.transform(features)  # Transform qilish
+    features = np.array([[Age, Glukoza, BMI, Hypertension, HeartDisease, 
+                          AfricanAmerican, Asian, Caucasian, Hispanic, Other]])
+    features = scaler.transform(features) 
 
-    # Modelni yuklash
-    # To'g'ri indentatsiya:
     try:
         with open('RandomForest.pkl', 'rb') as file:
             decision_tree_model = pickle.load(file)
     except Exception as e:
         st.error(f"Modelni yuklashda xato: {e}")
+
 
 
     # Bashorat qilish
