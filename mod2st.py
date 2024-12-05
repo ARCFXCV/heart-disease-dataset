@@ -66,8 +66,9 @@ thal = st.selectbox("Thalassemia turi", options=[3, 6, 7])
 
 # Bashorat qilish uchun tugma
 if st.button("Bashorat qilish"):
-    features = np.array([[age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
-    features = scaler.transform(features)
+   features = np.array([[age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
+   features = np.array(features)  # to'liq ikki o'lchovli formatga kiritish
+   features = scaler.transform(features)  # Transform qilish
 
     # Modelni yuklash
     try:
