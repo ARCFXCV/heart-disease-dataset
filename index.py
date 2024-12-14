@@ -84,7 +84,3 @@ def evaluation(y_test, y_pred):
     st.write(cm)
 
 evaluation(y_test, y_pred)
-
-# Saving the K-means model (as requested)
-with open('modj.pkl', 'wb') as f:
-    pickle.dump(kmeans_normalized, f)  # Yoki kmeans_standardized, kmeans_minmax
