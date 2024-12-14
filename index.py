@@ -28,7 +28,7 @@ rf = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42)
 rf.fit(X_train, y_train)
 
 # 6. Modelni saqlash
-with open('RandomForest.pkl', 'wb') as f:
+with open('modj.pkl', 'wb') as f:
     pickle.dump(rf, f)
 
 # 7. Streamlit interfeysi yaratish
@@ -61,7 +61,7 @@ if st.button("Bashorat qilish"):
 
     # Modelni yuklash va bashorat qilish
     try:
-        with open('RandomForest.pkl', 'rb') as file:
+        with open('modj.pkl', 'rb') as file:
             model = pickle.load(file)
 
         prediction = model.predict(features)
