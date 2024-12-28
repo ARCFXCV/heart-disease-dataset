@@ -45,28 +45,29 @@ MODEL_HASH = hashlib.sha256(open(MODEL_PATH, 'rb').read()).hexdigest()
 # 7. Streamlit interfeysi yaratish
 st.title("Yurak Kasalligi Bashorati")
 
-# Xavfsizlik eslatmasi
-st.warning("Iltimos, kiritilgan ma'lumotlarni ehtiyotkorlik bilan tekshirib, xatoliklar mavjudligini aniqlang. Dasturdagi xatoliklar xavfsizlikka ta'sir qilishi mumkin!")
-
 # 8. Kiruvchi ma'lumotlar uchun validatsiya modeli
 class InputData(BaseModel):
-    age: int = Field(..., ge=1, le=120, description="Yoshni 1 dan boshlash")  # Yoshni 1 dan boshlash
-    sex: int = Field(..., ge=0, le=1, description="Jinsni 0 yoki 1 sifatida kiriting: 0 - Erkak, 1 - Ayol")
-    cp: int = Field(..., ge=0, le=3, description="Ko'krak og'rig'i turini 0-3 orasida kiriting")
-    trestbps: int = Field(..., ge=80, le=200, description="Dam olishdagi qon bosimi (80-200 oralig'ida)")
-    chol: int = Field(..., ge=100, le=400, description="Serum xolesterin miqdori (100-400 oralig'ida)")
-    fbs: int = Field(..., ge=0, le=1, description="Qon shakar darajasini 0 yoki 1 sifatida kiriting: 0 - 120 dan past, 1 - 120 dan yuqori")
-    restecg: int = Field(..., ge=0, le=2, description="Dam olishdagi elektrokardiogram: 0, 1, yoki 2")
-    thalach: int = Field(..., ge=50, le=200, description="Maksimal yurak tezligini (50-200 oralig'ida) kiriting")
-    exang: int = Field(..., ge=0, le=1, description="Yurak og'rig'i bo'ldimi? 0 - yo'q, 1 - bor")
-    oldpeak: float = Field(..., ge=0.0, le=6.0, description="Oldingi qiyinchilikni 0.0 dan 6.0 gacha kiriting")
-    slope: int = Field(..., ge=0, le=2, description="Sloy turini 0, 1 yoki 2 sifatida kiriting")
-    ca: int = Field(..., ge=0, le=3, description="Qon tomirlarini sonini 0 dan 3 gacha kiriting")
-    thal: int = Field(..., ge=3, le=7, description="Thalassemia turini 3, 6 yoki 7 sifatida kiriting")
+    age: int = Field(..., ge=1, le=120)  # Yoshni 1 dan boshlash
+    sex: int = Field(..., ge=0, le=1)
+    cp: int = Field(..., ge=0, le=3)
+    trestbps: int = Field(..., ge=80, le=200)
+    chol: int = Field(..., ge=100, le=400)
+    fbs: int = Field(..., ge=0, le=1)
+    restecg: int = Field(..., ge=0, le=2)
+    thalach: int = Field(..., ge=50, le=200)
+    exang: int = Field(..., ge=0, le=1)
+    oldpeak: float = Field(..., ge=0.0, le=6.0)
+    slope: int = Field(..., ge=0, le=2)
+    ca: int = Field(..., ge=0, le=3)
+    thal: int = Field(..., ge=3, le=7)
 
 # 9. Foydalanuvchi kiritadigan qiymatlarni olish
 try:
     age = st.number_input("Yosh", min_value=1, max_value=120, value=30)  # Yoshni manfiy kiritishni oldini olish
+    if age < 1:
+        st.error("Iltimos, yoshni 1 yoki undan katta kiritishingiz kerak.")
+        st.stop()  # Agar yosh noto'g'ri kiritilsa, qolgan jarayonni to'xtatamiz
+
     sex = st.selectbox("Jins", options=["Erkak", "Ayol"])
     cp = st.selectbox("Ko'krak og'rig'i turi", options=[0, 1, 2, 3])
     trestbps = st.number_input("Dam olishda qon bosimi", min_value=80, max_value=200, value=120)
@@ -138,8 +139,8 @@ if st.button("Bashorat qilish"):
 y_pred = rf.predict(X_test)
 def evaluation(y_test, y_pred):
     accuracy = metrics.accuracy_score(y_test, y_pred) * 100
-    st.write(f"Model Aniqligi: {accuracy:.2f}%")
-    st.write(f"Klassifikatsiya hisobotlari:\n {metrics.classification_report(y_test, y_pred)}")
+    st.write(f"Model Accuracy: {accuracy:.2f}%")
+    st.write(f"Classification Report:\n {metrics.classification_report(y_test, y_pred)}")
     cm = metrics.confusion_matrix(y_test, y_pred)
     st.write("Confusion Matrix:")
     st.write(cm)
