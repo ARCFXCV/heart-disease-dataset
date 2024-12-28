@@ -71,12 +71,12 @@ if chol < 100 or chol > 400:
 if oldpeak < 0.0 or oldpeak > 6.0:
     error_message += "Oldpeak qiymati noto'g'ri. Iltimos, 0.0 va 6.0 orasida qiymat kiriting.\n"
 
-# Agar xatoliklar bo'lsa, ularni foydalanuvchiga ko'rsatish
+# Agar xatoliklar bo'lsa, ularni foydalanuvchiga ko'rsatish va to'g'irlashni so'rash
 if error_message:
     st.error(error_message)  # Xatoliklar ro'yxatini ko'rsatish
-    st.warning("Iltimos, yuqoridagi xatoliklarni to'g'irlang va yana bir bor urinib ko'ring.")  # To'g'irlashni so'rash
+    st.warning("Iltimos, yuqoridagi xatoliklarni to'g'irlang.")  # To'g'irlashni so'rash
 else:
-    # 11. Bashorat qilish
+    # 11. Bashorat qilish tugmasi
     if st.button("Bashorat qilish"):
         features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
 
