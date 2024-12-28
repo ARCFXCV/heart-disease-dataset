@@ -74,6 +74,8 @@ if oldpeak < 0.0 or oldpeak > 6.0:
 # Agar xatoliklar mavjud bo'lsa, xatolik xabarini chiqarish va bashoratni to'xtatish
 if error_message:
     st.error(error_message)
+    # "Bashorat qilish" tugmasi faqat qiymatlar to'g'ri bo'lsa ko'rinadi
+    st.button("Bashorat qilish", disabled=True)
 else:
     # 11. Agar barcha qiymatlar to'g'ri bo'lsa, bashorat qilish
     if st.button("Bashorat qilish"):
