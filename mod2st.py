@@ -98,4 +98,50 @@ try:
         thal=thal,
     )
 except ValidationError as e:
-    logger
+    logger.error(f"Ma'lumotlar noto'g'ri: {e}")
+    st.error(f"Ma'lumotlar noto'g'ri: {e}")
+    st.stop()
+
+# 10. Modelni yuklash va xeshni tekshirish
+def verify_model(file_path, expected_hash):
+    with open(file_path, 'rb') as f:
+        file_hash = hashlib.sha256(f.read()).hexdigest()
+    return file_hash == expected_hash
+
+if not verify_model(MODEL_PATH, MODEL_HASH):
+    logger.error("Model fayli buzilgan yoki ruxsatsiz o'zgartirilgan.")
+    st.error("Model fayli buzilgan yoki ruxsatsiz o'zgartirilgan.")
+    st.stop()
+
+with open(MODEL_PATH, 'rb') as f:
+    model = pickle.load(f)
+
+# 11. Bashorat qilish
+if st.button("Bashorat qilish"):
+    features = np.array([[
+        user_input.age, user_input.sex, user_input.cp, user_input.trestbps, user_input.chol,
+        user_input.fbs, user_input.restecg, user_input.thalach, user_input.exang,
+        user_input.oldpeak, user_input.slope, user_input.ca, user_input.thal
+    ]])
+
+    # Standartlashtirish
+    features = scaler.transform(features)
+
+    # Bashorat
+    prediction = model.predict(features)
+    if prediction[0] == 1:
+        st.success("Bashorat: Sizda yurak kasalligi mavjud.")
+    else:
+        st.success("Bashorat: Yurak kasalligi aniqlanmadi.")
+
+# 12. Modelni baholash
+y_pred = rf.predict(X_test)
+def evaluation(y_test, y_pred):
+    accuracy = metrics.accuracy_score(y_test, y_pred) * 100
+    st.write(f"Model Aniqligi: {accuracy:.2f}%")
+    st.write(f"Klassifikatsiya hisobotlari:\n {metrics.classification_report(y_test, y_pred)}")
+    cm = metrics.confusion_matrix(y_test, y_pred)
+    st.write("Confusion Matrix:")
+    st.write(cm)
+
+evaluation(y_test, y_pred)
