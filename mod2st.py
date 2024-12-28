@@ -5,6 +5,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 import pickle
 import streamlit as st
+from sklearn import metrics
+
 
 # 1. Ma'lumotlarni yuklash
 url = "https://raw.githubusercontent.com/ARCFXCV/heart-disease-dataset/refs/heads/main/heart.csv"
