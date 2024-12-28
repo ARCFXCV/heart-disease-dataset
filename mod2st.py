@@ -3,12 +3,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
-from sklearn import metrics
 import pickle
 import streamlit as st
-import hashlib
-import os
-from pydantic import BaseModel, ValidationError, Field
 
 # 1. Ma'lumotlarni yuklash
 url = "https://raw.githubusercontent.com/ARCFXCV/heart-disease-dataset/refs/heads/main/heart.csv"
@@ -30,44 +26,16 @@ X_test = scaler.transform(X_test)
 rf = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42)
 rf.fit(X_train, y_train)
 
-# 6. Modelni xavfsiz saqlash
-MODEL_PATH = 'RandomForest.pkl'
-
-def save_model(model, model_path):
-    try:
-        with open(model_path, 'wb') as f:
-            pickle.dump(model, f)
-        # Model faylining xeshini saqlash
-        model_hash = hashlib.sha256(open(model_path, 'rb').read()).hexdigest()
-        return model_hash
-    except Exception as e:
-        st.error(f"Modelni saqlashda xato yuz berdi: {e}")
-
-model_hash = save_model(rf, MODEL_PATH)
+# 6. Modelni saqlash
+with open('RandomForest.pkl', 'wb') as f:
+    pickle.dump(rf, f)
 
 # 7. Streamlit interfeysi yaratish
 st.title("Yurak Kasalligi Bashorati")
 
 # 8. Foydalanuvchi kiritadigan qiymatlarni olish
-class InputData(BaseModel):
-    age: int = Field(..., ge=1, le=120)
-    sex: int = Field(..., ge=0, le=1)
-    cp: int = Field(..., ge=0, le=3)
-    trestbps: int = Field(..., ge=80, le=200)
-    chol: int = Field(..., ge=100, le=400)
-    fbs: int = Field(..., ge=0, le=1)
-    restecg: int = Field(..., ge=0, le=2)
-    thalach: int = Field(..., ge=50, le=200)
-    exang: int = Field(..., ge=0, le=1)
-    oldpeak: float = Field(..., ge=0.0, le=6.0)
-    slope: int = Field(..., ge=0, le=2)
-    ca: int = Field(..., ge=0, le=3)
-    thal: int = Field(..., ge=3, le=7)
-
-# 9. Foydalanuvchi kiritadigan qiymatlarni olish
-age = st.number_input("Yosh", min_value=1, max_value=120, value=30)
+age = st.number_input("Yosh", min_value=0, max_value=120, value=30)
 sex = st.selectbox("Jins", options=["Erkak", "Ayol"])
-sex_encoded = 0 if sex == "Erkak" else 1
 cp = st.selectbox("Ko'krak og'rig'i turi", options=[0, 1, 2, 3])
 trestbps = st.number_input("Dam olishda qon bosimi", min_value=80, max_value=200, value=120)
 chol = st.number_input("Serum xolesterin miqdori", min_value=100, max_value=400, value=200)
@@ -80,13 +48,33 @@ slope = st.selectbox("Sloy turi", options=[0, 1, 2])
 ca = st.selectbox("Qon tomirlarini soni", options=[0, 1, 2, 3])
 thal = st.selectbox("Thalassemia turi", options=[3, 6, 7])
 
-# 10. Bashorat qilish
-if st.button("Bashorat qilish"):
-    features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
-    features = scaler.transform(features)
+# 9. Jinsni raqamli ko‘rinishga o‘tkazish
+sex_encoded = 0 if sex == "Erkak" else 1
+
+# 10. Noto'g'ri qiymatlar uchun xato bildirishnomasi
+if age <= 0 or age > 120:
+    st.error("Yoshni to'g'ri kiritishni unutmang! 0 dan 120 gacha bo'lishi kerak.")
     
+if trestbps < 80 or trestbps > 200:
+    st.error("Qon bosimi qiymati 80 dan 200 gacha bo'lishi kerak.")
+
+if chol < 100 or chol > 400:
+    st.error("Serum xolesterin miqdori 100 dan 400 gacha bo'lishi kerak.")
+
+if thalach < 50 or thalach > 200:
+    st.error("Maksimal yurak tezligi 50 dan 200 gacha bo'lishi kerak.")
+
+# 11. Bashorat qilish
+if st.button("Bashorat qilish"):
+    # Noto'g'ri qiymatlar bo'lmasa, bashorat qilish
+    features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
+
+    # Standartlashtirish
+    features = scaler.transform(features)
+
+    # Modelni yuklash va bashorat qilish
     try:
-        with open(MODEL_PATH, 'rb') as file:
+        with open('RandomForest.pkl', 'rb') as file:
             model = pickle.load(file)
 
         prediction = model.predict(features)
@@ -96,3 +84,16 @@ if st.button("Bashorat qilish"):
             st.success("Bashorat: Yurak kasalligi aniqlanmadi.")
     except Exception as e:
         st.error(f"Xato yuz berdi: {e}")
+
+# 12. Modelni baholash
+y_pred = rf.predict(X_test)
+
+def evaluation(y_test, y_pred):
+    accuracy = metrics.accuracy_score(y_test, y_pred) * 100
+    st.write(f"Model Accuracy: {accuracy:.2f}%")
+    st.write(f"Classification Report:\n {metrics.classification_report(y_test, y_pred)}")
+    cm = metrics.confusion_matrix(y_test, y_pred)
+    st.write("Confusion Matrix:")
+    st.write(cm)
+
+evaluation(y_test, y_pred)
