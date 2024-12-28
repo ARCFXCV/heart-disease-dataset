@@ -3,9 +3,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import metrics
 import pickle
 import streamlit as st
-from pydantic import BaseModel, ValidationError, Field
 
 # 1. Ma'lumotlarni yuklash
 url = "https://raw.githubusercontent.com/ARCFXCV/heart-disease-dataset/refs/heads/main/heart.csv"
@@ -35,7 +35,7 @@ with open('RandomForest.pkl', 'wb') as f:
 st.title("Yurak Kasalligi Bashorati")
 
 # 8. Foydalanuvchi kiritadigan qiymatlarni olish
-age = st.number_input("Yosh", min_value=1, max_value=120, value=30)
+age = st.number_input("Yosh", min_value=0, max_value=120, value=30)
 sex = st.selectbox("Jins", options=["Erkak", "Ayol"])
 cp = st.selectbox("Ko'krak og'rig'i turi", options=[0, 1, 2, 3])
 trestbps = st.number_input("Dam olishda qon bosimi", min_value=80, max_value=200, value=120)
@@ -52,13 +52,31 @@ thal = st.selectbox("Thalassemia turi", options=[3, 6, 7])
 # 9. Jinsni raqamli ko‘rinishga o‘tkazish
 sex_encoded = 0 if sex == "Erkak" else 1
 
-# 10. Kiruvchi qiymatlar chegarasini tekshirish
-if (age < 1 or age > 120 or trestbps < 80 or trestbps > 200 or chol < 100 or chol > 400 or oldpeak < 0.0 or oldpeak > 6.0):
-    st.error("Iltimos, kiritilgan qiymatlar chegaralariga mos kelishini tekshiring.")
-    st.stop()
+# 10. Foydalanuvchi kiritgan qiymatlarni tekshirish
+error_message = ""
 
-# 11. Bashorat qilish
-if st.button("Bashorat qilish"):
+# Yoshni tekshirish
+if age < 1 or age > 120:
+    error_message += "Yosh qiymati noto'g'ri. Iltimos, 1 va 120 orasida qiymat kiriting.\n"
+
+# Qon bosimini tekshirish
+if trestbps < 80 or trestbps > 200:
+    error_message += "Dam olishdagi qon bosimi noto'g'ri. Iltimos, 80 va 200 orasida qiymat kiriting.\n"
+
+# Xolesterin miqdorini tekshirish
+if chol < 100 or chol > 400:
+    error_message += "Serum xolesterin miqdori noto'g'ri. Iltimos, 100 va 400 orasida qiymat kiriting.\n"
+
+# Oldpeak (qiyinchilik darajasi)ni tekshirish
+if oldpeak < 0.0 or oldpeak > 6.0:
+    error_message += "Oldpeak qiymati noto'g'ri. Iltimos, 0.0 va 6.0 orasida qiymat kiriting.\n"
+
+# Agar xatoliklar mavjud bo'lsa, xatolik xabarini chiqarish va bashoratni to'xtatish
+if error_message:
+    st.error(error_message)
+    st.stop()  # Bashoratni amalga oshirmaslik uchun dastur to'xtatiladi
+else:
+    # Agar barcha qiymatlar to'g'ri bo'lsa, bashorat qilish
     features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
 
     # Standartlashtirish
@@ -77,7 +95,7 @@ if st.button("Bashorat qilish"):
     except Exception as e:
         st.error(f"Xato yuz berdi: {e}")
 
-# 12. Modelni baholash
+# 11. Modelni baholash
 y_pred = rf.predict(X_test)
 
 def evaluation(y_test, y_pred):
