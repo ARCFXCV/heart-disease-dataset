@@ -5,8 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 import pickle
 import streamlit as st
-from sklearn import metrics
-
+from pydantic import BaseModel, ValidationError, Field
 
 # 1. Ma'lumotlarni yuklash
 url = "https://raw.githubusercontent.com/ARCFXCV/heart-disease-dataset/refs/heads/main/heart.csv"
@@ -36,7 +35,7 @@ with open('RandomForest.pkl', 'wb') as f:
 st.title("Yurak Kasalligi Bashorati")
 
 # 8. Foydalanuvchi kiritadigan qiymatlarni olish
-age = st.number_input("Yosh", min_value=0, max_value=120, value=30)
+age = st.number_input("Yosh", min_value=1, max_value=120, value=30)
 sex = st.selectbox("Jins", options=["Erkak", "Ayol"])
 cp = st.selectbox("Ko'krak og'rig'i turi", options=[0, 1, 2, 3])
 trestbps = st.number_input("Dam olishda qon bosimi", min_value=80, max_value=200, value=120)
@@ -53,22 +52,13 @@ thal = st.selectbox("Thalassemia turi", options=[3, 6, 7])
 # 9. Jinsni raqamli ko‘rinishga o‘tkazish
 sex_encoded = 0 if sex == "Erkak" else 1
 
-# 10. Noto'g'ri qiymatlar uchun xato bildirishnomasi
-if age <= 0 or age > 120:
-    st.error("Yoshni to'g'ri kiritishni unutmang! 1 dan 120 gacha bo'lishi kerak.")
-    
-if trestbps < 80 or trestbps > 200:
-    st.error("Qon bosimi qiymati 81 dan 200 gacha bo'lishi kerak.")
-
-if chol < 100 or chol > 400:
-    st.error("Serum xolesterin miqdori 101 dan 400 gacha bo'lishi kerak.")
-
-if thalach < 50 or thalach > 200:
-    st.error("Maksimal yurak tezligi 51 dan 200 gacha bo'lishi kerak.")
+# 10. Kiruvchi qiymatlar chegarasini tekshirish
+if (age < 1 or age > 120 or trestbps < 80 or trestbps > 200 or chol < 100 or chol > 400 or oldpeak < 0.0 or oldpeak > 6.0):
+    st.error("Iltimos, kiritilgan qiymatlar chegaralariga mos kelishini tekshiring.")
+    st.stop()
 
 # 11. Bashorat qilish
 if st.button("Bashorat qilish"):
-    # Noto'g'ri qiymatlar bo'lmasa, bashorat qilish
     features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
 
     # Standartlashtirish
