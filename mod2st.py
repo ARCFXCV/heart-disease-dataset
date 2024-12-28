@@ -76,6 +76,9 @@ if error_message:
     st.error(error_message)  # Xatoliklar ro'yxatini ko'rsatish
     st.warning("Iltimos, yuqoridagi xatoliklarni to'g'irlang.")  # To'g'irlashni so'rash
 else:
+    # Boshqa qiymatlar to'g'ri kiritilgan bo'lsa, bashorat qilish tugmasini ko'rsatish
+    st.success("Hamma qiymatlar to'g'ri kiritildi. Natijani bilish uchun tugmani bosing.")
+
     # 11. Bashorat qilish tugmasi
     if st.button("Bashorat qilish"):
         features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
