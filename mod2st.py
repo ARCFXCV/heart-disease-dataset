@@ -59,16 +59,16 @@ error_message = ""
 if age < 1 or age > 120:
     error_message += "Yosh qiymati noto'g'ri. Iltimos, 1 va 120 orasida qiymat kiriting.\n"
 
-# Qon bosimini tekshirish
-if trestbps < 80 or trestbps > 200:
+# Dam olishdagi qon bosimini tekshirish
+elif trestbps < 80 or trestbps > 200:
     error_message += "Dam olishdagi qon bosimi noto'g'ri. Iltimos, 80 va 200 orasida qiymat kiriting.\n"
 
-# Xolesterin miqdorini tekshirish
-if chol < 100 or chol > 400:
+# Serum xolesterin miqdorini tekshirish
+elif chol < 100 or chol > 400:
     error_message += "Serum xolesterin miqdori noto'g'ri. Iltimos, 100 va 400 orasida qiymat kiriting.\n"
 
 # Oldpeak (qiyinchilik darajasi)ni tekshirish
-if oldpeak < 0.0 or oldpeak > 6.0:
+elif oldpeak < 0.0 or oldpeak > 6.0:
     error_message += "Oldpeak qiymati noto'g'ri. Iltimos, 0.0 va 6.0 orasida qiymat kiriting.\n"
 
 # Agar xatoliklar bo'lsa, ularni foydalanuvchiga ko'rsatish va to'g'irlashni so'rash
@@ -76,25 +76,37 @@ if error_message:
     st.error(error_message)  # Xatoliklar ro'yxatini ko'rsatish
     st.warning("Iltimos, yuqoridagi xatoliklarni to'g'irlang.")  # To'g'irlashni so'rash
 else:
-    # Boshqa qiymatlar to'g'ri kiritilgan bo'lsa, bashorat qilish tugmasini ko'rsatish
-    st.success("Hamma qiymatlar to'g'ri kiritildi. Natijani bilish uchun tugmani bosing.")
+    st.success("Hamma qiymatlar to'g'ri kiritildi. Natijani bilish uchun tugmani bosing.")  # To'g'ri kiritilgan qiymatlar
 
-    # 11. Bashorat qilish tugmasi
-    if st.button("Bashorat qilish"):
-        features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
+# 11. Bashorat qilish tugmasi
+if st.button("Bashorat qilish"):
+    features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
 
-        # Standartlashtirish
-        features = scaler.transform(features)
+    # Standartlashtirish
+    features = scaler.transform(features)
 
-        # Modelni yuklash va bashorat qilish
-        try:
-            with open('RandomForest.pkl', 'rb') as file:
-                model = pickle.load(file)
+    # Modelni yuklash va bashorat qilish
+    try:
+        with open('RandomForest.pkl', 'rb') as file:
+            model = pickle.load(file)
 
-            prediction = model.predict(features)
-            if prediction[0] == 1:
-                st.success("Bashorat: Sizda yurak kasalligi mavjud.")
-            else:
-                st.success("Bashorat: Yurak kasalligi aniqlanmadi.")
-        except Exception as e:
-            st.error(f"Xato yuz berdi: {e}")
+        prediction = model.predict(features)
+        if prediction[0] == 1:
+            st.success("Bashorat: Sizda yurak kasalligi mavjud.")
+        else:
+            st.success("Bashorat: Yurak kasalligi aniqlanmadi.")
+    except Exception as e:
+        st.error(f"Xato yuz berdi: {e}")
+
+# 12. Modelni baholash
+y_pred = rf.predict(X_test)
+
+def evaluation(y_test, y_pred):
+    accuracy = metrics.accuracy_score(y_test, y_pred) * 100
+    st.write(f"Model Accuracy: {accuracy:.2f}%")
+    st.write(f"Classification Report:\n {metrics.classification_report(y_test, y_pred)}")
+    cm = metrics.confusion_matrix(y_test, y_pred)
+    st.write("Confusion Matrix:")
+    st.write(cm)
+
+evaluation(y_test, y_pred)
