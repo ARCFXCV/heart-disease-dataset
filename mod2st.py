@@ -53,16 +53,16 @@ sex_encoded = 0 if sex == "Erkak" else 1
 
 # 10. Noto'g'ri qiymatlar uchun xato bildirishnomasi
 if age <= 0 or age > 120:
-    st.error("Yoshni to'g'ri kiritishni unutmang! 0 dan 120 gacha bo'lishi kerak.")
+    st.error("Yoshni to'g'ri kiritishni unutmang! 1 dan 120 gacha bo'lishi kerak.")
     
 if trestbps < 80 or trestbps > 200:
-    st.error("Qon bosimi qiymati 80 dan 200 gacha bo'lishi kerak.")
+    st.error("Qon bosimi qiymati 81 dan 200 gacha bo'lishi kerak.")
 
 if chol < 100 or chol > 400:
-    st.error("Serum xolesterin miqdori 100 dan 400 gacha bo'lishi kerak.")
+    st.error("Serum xolesterin miqdori 101 dan 400 gacha bo'lishi kerak.")
 
 if thalach < 50 or thalach > 200:
-    st.error("Maksimal yurak tezligi 50 dan 200 gacha bo'lishi kerak.")
+    st.error("Maksimal yurak tezligi 51 dan 200 gacha bo'lishi kerak.")
 
 # 11. Bashorat qilish
 if st.button("Bashorat qilish"):
