@@ -45,6 +45,9 @@ MODEL_HASH = hashlib.sha256(open(MODEL_PATH, 'rb').read()).hexdigest()
 # 7. Streamlit interfeysi yaratish
 st.title("Yurak Kasalligi Bashorati")
 
+# Xavfsizlik eslatmasi
+st.warning("Iltimos, kiritilgan ma'lumotlarni ehtiyotkorlik bilan tekshirib, xatoliklar mavjudligini aniqlang. Dasturdagi xatoliklar xavfsizlikka ta'sir qilishi mumkin!")
+
 # 8. Kiruvchi ma'lumotlar uchun validatsiya modeli
 class InputData(BaseModel):
     age: int = Field(..., ge=1, le=120)  # Yoshni 1 dan boshlash
