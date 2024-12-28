@@ -52,31 +52,31 @@ thal = st.selectbox("Thalassemia turi", options=[3, 6, 7])
 # 9. Jinsni raqamli ko‘rinishga o‘tkazish
 sex_encoded = 0 if sex == "Erkak" else 1
 
-# 10. Foydalanuvchi kiritgan qiymatlarni tekshirish
+# 10. Qiymatlarni tekshirish
 error_message = ""
 
 # Yoshni tekshirish
-# Qiymatlarni tekshirishni bitta if ga olish
-if age < 1 or age > 120 or trestbps < 80 or trestbps > 200 or chol < 100 or chol > 400 or oldpeak < 0.0 or oldpeak > 6.0:
-    error_message += "Barcha qiymatlar to'g'ri bo'lishi kerak:\n"
-    if age < 1 or age > 120:
-        error_message += "Yosh qiymati noto'g'ri. Iltimos, 1 va 120 orasida qiymat kiriting.\n"
-    if trestbps < 80 or trestbps > 200:
-        error_message += "Dam olishdagi qon bosimi noto'g'ri. Iltimos, 80 va 200 orasida qiymat kiriting.\n"
-    if chol < 100 or chol > 400:
-        error_message += "Serum xolesterin miqdori noto'g'ri. Iltimos, 100 va 400 orasida qiymat kiriting.\n"
-    if oldpeak < 0.0 or oldpeak > 6.0:
-        error_message += "Oldpeak qiymati noto'g'ri. Iltimos, 0.0 va 6.0 orasida qiymat kiriting.\n"
+if age < 1 or age > 120:
+    error_message += "Yosh qiymati noto'g'ri. Iltimos, 1 va 120 orasida qiymat kiriting.\n"
 
+# Qon bosimini tekshirish
+if trestbps < 80 or trestbps > 200:
+    error_message += "Dam olishdagi qon bosimi noto'g'ri. Iltimos, 80 va 200 orasida qiymat kiriting.\n"
+
+# Xolesterin miqdorini tekshirish
+if chol < 100 or chol > 400:
+    error_message += "Serum xolesterin miqdori noto'g'ri. Iltimos, 100 va 400 orasida qiymat kiriting.\n"
+
+# Oldpeak (qiyinchilik darajasi)ni tekshirish
+if oldpeak < 0.0 or oldpeak > 6.0:
     error_message += "Oldpeak qiymati noto'g'ri. Iltimos, 0.0 va 6.0 orasida qiymat kiriting.\n"
 
-# Agar xatoliklar mavjud bo'lsa, xatolik xabarini chiqarish va bashoratni to'xtatish
+# Agar xatoliklar bo'lsa, ularni foydalanuvchiga ko'rsatish
 if error_message:
-    st.error(error_message)
-    # "Bashorat qilish" tugmasi faqat qiymatlar to'g'ri bo'lsa ko'rinadi
-    st.button("Bashorat qilish", disabled=True)
+    st.error(error_message)  # Xatoliklar ro'yxatini ko'rsatish
+    st.warning("Iltimos, yuqoridagi xatoliklarni to'g'irlang va yana bir bor urinib ko'ring.")  # To'g'irlashni so'rash
 else:
-    # 11. Agar barcha qiymatlar to'g'ri bo'lsa, bashorat qilish
+    # 11. Bashorat qilish
     if st.button("Bashorat qilish"):
         features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
 
