@@ -74,28 +74,28 @@ if oldpeak < 0.0 or oldpeak > 6.0:
 # Agar xatoliklar mavjud bo'lsa, xatolik xabarini chiqarish va bashoratni to'xtatish
 if error_message:
     st.error(error_message)
-    st.stop()  # Bashoratni amalga oshirmaslik uchun dastur to'xtatiladi
 else:
-    # Agar barcha qiymatlar to'g'ri bo'lsa, bashorat qilish
-    features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
+    # 11. Agar barcha qiymatlar to'g'ri bo'lsa, bashorat qilish
+    if st.button("Bashorat qilish"):
+        features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
 
-    # Standartlashtirish
-    features = scaler.transform(features)
+        # Standartlashtirish
+        features = scaler.transform(features)
 
-    # Modelni yuklash va bashorat qilish
-    try:
-        with open('RandomForest.pkl', 'rb') as file:
-            model = pickle.load(file)
+        # Modelni yuklash va bashorat qilish
+        try:
+            with open('RandomForest.pkl', 'rb') as file:
+                model = pickle.load(file)
 
-        prediction = model.predict(features)
-        if prediction[0] == 1:
-            st.success("Bashorat: Sizda yurak kasalligi mavjud.")
-        else:
-            st.success("Bashorat: Yurak kasalligi aniqlanmadi.")
-    except Exception as e:
-        st.error(f"Xato yuz berdi: {e}")
+            prediction = model.predict(features)
+            if prediction[0] == 1:
+                st.success("Bashorat: Sizda yurak kasalligi mavjud.")
+            else:
+                st.success("Bashorat: Yurak kasalligi aniqlanmadi.")
+        except Exception as e:
+            st.error(f"Xato yuz berdi: {e}")
 
-# 11. Modelni baholash
+# 12. Modelni baholash
 y_pred = rf.predict(X_test)
 
 def evaluation(y_test, y_pred):
