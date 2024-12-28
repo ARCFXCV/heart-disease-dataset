@@ -6,13 +6,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 import pickle
 import streamlit as st
-from pydantic import BaseModel, ValidationError, Field
 import hashlib
-import logging
-
-# Logging sozlash
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import os
+from pydantic import BaseModel, ValidationError, Field
 
 # 1. Ma'lumotlarni yuklash
 url = "https://raw.githubusercontent.com/ARCFXCV/heart-disease-dataset/refs/heads/main/heart.csv"
@@ -34,20 +30,27 @@ X_test = scaler.transform(X_test)
 rf = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42)
 rf.fit(X_train, y_train)
 
-# 6. Modelni saqlash
+# 6. Modelni xavfsiz saqlash
 MODEL_PATH = 'RandomForest.pkl'
-with open(MODEL_PATH, 'wb') as f:
-    pickle.dump(rf, f)
 
-# Model faylining xeshini yaratish
-MODEL_HASH = hashlib.sha256(open(MODEL_PATH, 'rb').read()).hexdigest()
+def save_model(model, model_path):
+    try:
+        with open(model_path, 'wb') as f:
+            pickle.dump(model, f)
+        # Model faylining xeshini saqlash
+        model_hash = hashlib.sha256(open(model_path, 'rb').read()).hexdigest()
+        return model_hash
+    except Exception as e:
+        st.error(f"Modelni saqlashda xato yuz berdi: {e}")
+
+model_hash = save_model(rf, MODEL_PATH)
 
 # 7. Streamlit interfeysi yaratish
 st.title("Yurak Kasalligi Bashorati")
 
-# 8. Kiruvchi ma'lumotlar uchun validatsiya modeli
+# 8. Foydalanuvchi kiritadigan qiymatlarni olish
 class InputData(BaseModel):
-    age: int = Field(..., ge=1, le=120)  # Yoshni 1 dan boshlash
+    age: int = Field(..., ge=1, le=120)
     sex: int = Field(..., ge=0, le=1)
     cp: int = Field(..., ge=0, le=3)
     trestbps: int = Field(..., ge=80, le=200)
@@ -62,87 +65,34 @@ class InputData(BaseModel):
     thal: int = Field(..., ge=3, le=7)
 
 # 9. Foydalanuvchi kiritadigan qiymatlarni olish
-try:
-    age = st.number_input("Yosh", min_value=1, max_value=120, value=30)  # Yoshni manfiy kiritishni oldini olish
-    if age < 1:
-        st.error("Iltimos, yoshni 1 yoki undan katta kiritishingiz kerak.")
-        st.stop()  # Agar yosh noto'g'ri kiritilsa, qolgan jarayonni to'xtatamiz
+age = st.number_input("Yosh", min_value=1, max_value=120, value=30)
+sex = st.selectbox("Jins", options=["Erkak", "Ayol"])
+sex_encoded = 0 if sex == "Erkak" else 1
+cp = st.selectbox("Ko'krak og'rig'i turi", options=[0, 1, 2, 3])
+trestbps = st.number_input("Dam olishda qon bosimi", min_value=80, max_value=200, value=120)
+chol = st.number_input("Serum xolesterin miqdori", min_value=100, max_value=400, value=200)
+fbs = st.selectbox("Qon shakar darajasi 120 dan yuqori?", options=[0, 1])
+restecg = st.selectbox("Dam olishdagi elektrokardiogram", options=[0, 1, 2])
+thalach = st.number_input("Maksimal yurak tezligi", min_value=50, max_value=200, value=150)
+exang = st.selectbox("Yurak og'rig'i bo'ldimi?", options=[0, 1])
+oldpeak = st.number_input("Oldingi qiyinchilik", min_value=0.0, max_value=6.0, value=1.0)
+slope = st.selectbox("Sloy turi", options=[0, 1, 2])
+ca = st.selectbox("Qon tomirlarini soni", options=[0, 1, 2, 3])
+thal = st.selectbox("Thalassemia turi", options=[3, 6, 7])
 
-    sex = st.selectbox("Jins", options=["Erkak", "Ayol"])
-    cp = st.selectbox("Ko'krak og'rig'i turi", options=[0, 1, 2, 3])
-    trestbps = st.number_input("Dam olishda qon bosimi", min_value=80, max_value=200, value=120)
-    chol = st.number_input("Serum xolesterin miqdori", min_value=100, max_value=400, value=200)
-    fbs = st.selectbox("Qon shakar darajasi 120 dan yuqori?", options=[0, 1])
-    restecg = st.selectbox("Dam olishdagi elektrokardiogram", options=[0, 1, 2])
-    thalach = st.number_input("Maksimal yurak tezligi", min_value=50, max_value=200, value=150)
-    exang = st.selectbox("Yurak og'rig'i bo'ldimi?", options=[0, 1])
-    oldpeak = st.number_input("Oldingi qiyinchilik", min_value=0.0, max_value=6.0, value=1.0)
-    slope = st.selectbox("Sloy turi", options=[0, 1, 2])
-    ca = st.selectbox("Qon tomirlarini soni", options=[0, 1, 2, 3])
-    thal = st.selectbox("Thalassemia turi", options=[3, 6, 7])
-
-    sex_encoded = 0 if sex == "Erkak" else 1
-
-    user_input = InputData(
-        age=age,
-        sex=sex_encoded,
-        cp=cp,
-        trestbps=trestbps,
-        chol=chol,
-        fbs=fbs,
-        restecg=restecg,
-        thalach=thalach,
-        exang=exang,
-        oldpeak=oldpeak,
-        slope=slope,
-        ca=ca,
-        thal=thal,
-    )
-except ValidationError as e:
-    logger.error(f"Ma'lumotlar noto'g'ri: {e}")
-    st.error(f"Ma'lumotlar noto'g'ri: {e}")
-    st.stop()
-
-# 10. Modelni yuklash va xeshni tekshirish
-def verify_model(file_path, expected_hash):
-    with open(file_path, 'rb') as f:
-        file_hash = hashlib.sha256(f.read()).hexdigest()
-    return file_hash == expected_hash
-
-if not verify_model(MODEL_PATH, MODEL_HASH):
-    logger.error("Model fayli buzilgan yoki ruxsatsiz o'zgartirilgan.")
-    st.error("Model fayli buzilgan yoki ruxsatsiz o'zgartirilgan.")
-    st.stop()
-
-with open(MODEL_PATH, 'rb') as f:
-    model = pickle.load(f)
-
-# 11. Bashorat qilish
+# 10. Bashorat qilish
 if st.button("Bashorat qilish"):
-    features = np.array([[
-        user_input.age, user_input.sex, user_input.cp, user_input.trestbps, user_input.chol,
-        user_input.fbs, user_input.restecg, user_input.thalach, user_input.exang,
-        user_input.oldpeak, user_input.slope, user_input.ca, user_input.thal
-    ]])
-
-    # Standartlashtirish
+    features = np.array([[age, sex_encoded, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]])
     features = scaler.transform(features)
+    
+    try:
+        with open(MODEL_PATH, 'rb') as file:
+            model = pickle.load(file)
 
-    # Bashorat
-    prediction = model.predict(features)
-    if prediction[0] == 1:
-        st.success("Bashorat: Sizda yurak kasalligi mavjud.")
-    else:
-        st.success("Bashorat: Yurak kasalligi aniqlanmadi.")
-
-# 12. Modelni baholash
-y_pred = rf.predict(X_test)
-def evaluation(y_test, y_pred):
-    accuracy = metrics.accuracy_score(y_test, y_pred) * 100
-    st.write(f"Model Accuracy: {accuracy:.2f}%")
-    st.write(f"Classification Report:\n {metrics.classification_report(y_test, y_pred)}")
-    cm = metrics.confusion_matrix(y_test, y_pred)
-    st.write("Confusion Matrix:")
-    st.write(cm)
-
-evaluation(y_test, y_pred)
+        prediction = model.predict(features)
+        if prediction[0] == 1:
+            st.success("Bashorat: Sizda yurak kasalligi mavjud.")
+        else:
+            st.success("Bashorat: Yurak kasalligi aniqlanmadi.")
+    except Exception as e:
+        st.error(f"Xato yuz berdi: {e}")
