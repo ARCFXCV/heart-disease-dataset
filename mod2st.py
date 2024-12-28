@@ -8,6 +8,11 @@ import pickle
 import streamlit as st
 from pydantic import BaseModel, ValidationError, Field
 import hashlib
+import logging
+
+# Logging sozlash
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # 1. Ma'lumotlarni yuklash
 url = "https://raw.githubusercontent.com/ARCFXCV/heart-disease-dataset/refs/heads/main/heart.csv"
@@ -42,7 +47,7 @@ st.title("Yurak Kasalligi Bashorati")
 
 # 8. Kiruvchi ma'lumotlar uchun validatsiya modeli
 class InputData(BaseModel):
-    age: int = Field(..., ge=0, le=120)
+    age: int = Field(..., ge=1, le=120)  # Yoshni 1 dan boshlash
     sex: int = Field(..., ge=0, le=1)
     cp: int = Field(..., ge=0, le=3)
     trestbps: int = Field(..., ge=80, le=200)
@@ -58,7 +63,7 @@ class InputData(BaseModel):
 
 # 9. Foydalanuvchi kiritadigan qiymatlarni olish
 try:
-    age = st.number_input("Yosh", min_value=0, max_value=120, value=30)
+    age = st.number_input("Yosh", min_value=1, max_value=120, value=30)  # Yoshni manfiy kiritishni oldini olish
     sex = st.selectbox("Jins", options=["Erkak", "Ayol"])
     cp = st.selectbox("Ko'krak og'rig'i turi", options=[0, 1, 2, 3])
     trestbps = st.number_input("Dam olishda qon bosimi", min_value=80, max_value=200, value=120)
@@ -90,6 +95,7 @@ try:
         thal=thal,
     )
 except ValidationError as e:
+    logger.error(f"Ma'lumotlar noto'g'ri: {e}")
     st.error(f"Ma'lumotlar noto'g'ri: {e}")
     st.stop()
 
@@ -100,6 +106,7 @@ def verify_model(file_path, expected_hash):
     return file_hash == expected_hash
 
 if not verify_model(MODEL_PATH, MODEL_HASH):
+    logger.error("Model fayli buzilgan yoki ruxsatsiz o'zgartirilgan.")
     st.error("Model fayli buzilgan yoki ruxsatsiz o'zgartirilgan.")
     st.stop()
 
