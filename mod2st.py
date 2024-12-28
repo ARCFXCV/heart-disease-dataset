@@ -98,16 +98,3 @@ else:
                 st.success("Bashorat: Yurak kasalligi aniqlanmadi.")
         except Exception as e:
             st.error(f"Xato yuz berdi: {e}")
-
-# 12. Modelni baholash
-y_pred = rf.predict(X_test)
-
-def evaluation(y_test, y_pred):
-    accuracy = metrics.accuracy_score(y_test, y_pred) * 100
-    st.write(f"Model Accuracy: {accuracy:.2f}%")
-    st.write(f"Classification Report:\n {metrics.classification_report(y_test, y_pred)}")
-    cm = metrics.confusion_matrix(y_test, y_pred)
-    st.write("Confusion Matrix:")
-    st.write(cm)
-
-evaluation(y_test, y_pred)
