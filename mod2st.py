@@ -50,19 +50,19 @@ st.warning("Iltimos, kiritilgan ma'lumotlarni ehtiyotkorlik bilan tekshirib, xat
 
 # 8. Kiruvchi ma'lumotlar uchun validatsiya modeli
 class InputData(BaseModel):
-    age: int = Field(..., ge=1, le=120)  # Yoshni 1 dan boshlash
-    sex: int = Field(..., ge=0, le=1)
-    cp: int = Field(..., ge=0, le=3)
-    trestbps: int = Field(..., ge=80, le=200)
-    chol: int = Field(..., ge=100, le=400)
-    fbs: int = Field(..., ge=0, le=1)
-    restecg: int = Field(..., ge=0, le=2)
-    thalach: int = Field(..., ge=50, le=200)
-    exang: int = Field(..., ge=0, le=1)
-    oldpeak: float = Field(..., ge=0.0, le=6.0)
-    slope: int = Field(..., ge=0, le=2)
-    ca: int = Field(..., ge=0, le=3)
-    thal: int = Field(..., ge=3, le=7)
+    age: int = Field(..., ge=1, le=120, description="Yoshni 1 dan boshlash")  # Yoshni 1 dan boshlash
+    sex: int = Field(..., ge=0, le=1, description="Jinsni 0 yoki 1 sifatida kiriting: 0 - Erkak, 1 - Ayol")
+    cp: int = Field(..., ge=0, le=3, description="Ko'krak og'rig'i turini 0-3 orasida kiriting")
+    trestbps: int = Field(..., ge=80, le=200, description="Dam olishdagi qon bosimi (80-200 oralig'ida)")
+    chol: int = Field(..., ge=100, le=400, description="Serum xolesterin miqdori (100-400 oralig'ida)")
+    fbs: int = Field(..., ge=0, le=1, description="Qon shakar darajasini 0 yoki 1 sifatida kiriting: 0 - 120 dan past, 1 - 120 dan yuqori")
+    restecg: int = Field(..., ge=0, le=2, description="Dam olishdagi elektrokardiogram: 0, 1, yoki 2")
+    thalach: int = Field(..., ge=50, le=200, description="Maksimal yurak tezligini (50-200 oralig'ida) kiriting")
+    exang: int = Field(..., ge=0, le=1, description="Yurak og'rig'i bo'ldimi? 0 - yo'q, 1 - bor")
+    oldpeak: float = Field(..., ge=0.0, le=6.0, description="Oldingi qiyinchilikni 0.0 dan 6.0 gacha kiriting")
+    slope: int = Field(..., ge=0, le=2, description="Sloy turini 0, 1 yoki 2 sifatida kiriting")
+    ca: int = Field(..., ge=0, le=3, description="Qon tomirlarini sonini 0 dan 3 gacha kiriting")
+    thal: int = Field(..., ge=3, le=7, description="Thalassemia turini 3, 6 yoki 7 sifatida kiriting")
 
 # 9. Foydalanuvchi kiritadigan qiymatlarni olish
 try:
@@ -98,50 +98,4 @@ try:
         thal=thal,
     )
 except ValidationError as e:
-    logger.error(f"Ma'lumotlar noto'g'ri: {e}")
-    st.error(f"Ma'lumotlar noto'g'ri: {e}")
-    st.stop()
-
-# 10. Modelni yuklash va xeshni tekshirish
-def verify_model(file_path, expected_hash):
-    with open(file_path, 'rb') as f:
-        file_hash = hashlib.sha256(f.read()).hexdigest()
-    return file_hash == expected_hash
-
-if not verify_model(MODEL_PATH, MODEL_HASH):
-    logger.error("Model fayli buzilgan yoki ruxsatsiz o'zgartirilgan.")
-    st.error("Model fayli buzilgan yoki ruxsatsiz o'zgartirilgan.")
-    st.stop()
-
-with open(MODEL_PATH, 'rb') as f:
-    model = pickle.load(f)
-
-# 11. Bashorat qilish
-if st.button("Bashorat qilish"):
-    features = np.array([[
-        user_input.age, user_input.sex, user_input.cp, user_input.trestbps, user_input.chol,
-        user_input.fbs, user_input.restecg, user_input.thalach, user_input.exang,
-        user_input.oldpeak, user_input.slope, user_input.ca, user_input.thal
-    ]])
-
-    # Standartlashtirish
-    features = scaler.transform(features)
-
-    # Bashorat
-    prediction = model.predict(features)
-    if prediction[0] == 1:
-        st.success("Bashorat: Sizda yurak kasalligi mavjud.")
-    else:
-        st.success("Bashorat: Yurak kasalligi aniqlanmadi.")
-
-# 12. Modelni baholash
-y_pred = rf.predict(X_test)
-def evaluation(y_test, y_pred):
-    accuracy = metrics.accuracy_score(y_test, y_pred) * 100
-    st.write(f"Model Accuracy: {accuracy:.2f}%")
-    st.write(f"Classification Report:\n {metrics.classification_report(y_test, y_pred)}")
-    cm = metrics.confusion_matrix(y_test, y_pred)
-    st.write("Confusion Matrix:")
-    st.write(cm)
-
-evaluation(y_test, y_pred)
+    logger
